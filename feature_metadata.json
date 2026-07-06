@@ -1,0 +1,40 @@
+{
+    "features": [
+        "Model Year",
+        "Make_Encoded",
+        "EV_Type_Binary",
+        "Area_Binary",
+        "CAFV_Code"
+    ],
+    "target": "Electric Range",
+    "best_model": "XGBoost",
+    "make_classes": [
+        "AUDI",
+        "BMW",
+        "CHEVROLET",
+        "CHRYSLER",
+        "DODGE",
+        "FIAT",
+        "FORD",
+        "HONDA",
+        "HYUNDAI",
+        "JEEP",
+        "KIA",
+        "LEXUS",
+        "MAZDA",
+        "MERCEDES-BENZ",
+        "MITSUBISHI",
+        "NISSAN",
+        "OTHER",
+        "PORSCHE",
+        "TESLA",
+        "TOYOTA",
+        "VOLKSWAGEN",
+        "VOLVO"
+    ],
+    "cafv_map": {
+        "Clean Alternative Fuel Vehicle Eligible": 2,
+        "Eligibility unknown as battery range has not been researched": 1,
+        "Not eligible due to low battery range": 0
+    }
+}
