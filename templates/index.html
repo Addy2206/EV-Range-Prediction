@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EV Battery Range Predictor</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --ev-green: #1db954;
+      --ev-dark: #0d1b2a;
+      --ev-card: #132235;
+      --ev-border: #1e3a5f;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0d1b2a 0%, #0a2540 60%, #0d1b2a 100%);
+      min-height: 100vh;
+      color: #e0eaff;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    /* ── Navbar ── */
+    .navbar-brand-custom {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #fff !important;
+      letter-spacing: .5px;
+    }
+    .navbar-custom {
+      background: rgba(13, 27, 42, 0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--ev-border);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(120deg, #0a2540, #123d6b);
+      border-bottom: 1px solid var(--ev-border);
+      padding: 3.5rem 0 2.5rem;
+    }
+    .hero-badge {
+      background: rgba(29, 185, 84, 0.15);
+      border: 1px solid rgba(29, 185, 84, 0.4);
+      color: var(--ev-green);
+      font-size: .78rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: .3rem .9rem;
+      border-radius: 50px;
+      display: inline-block;
+      margin-bottom: 1rem;
+    }
+    .hero h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .hero p {
+      color: #93b4d4;
+      font-size: 1.05rem;
+    }
+    .stat-pill {
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--ev-border);
+      border-radius: 12px;
+      padding: .6rem 1.2rem;
+      font-size: .85rem;
+      color: #c5d9f0;
+    }
+    .stat-pill span {
+      color: var(--ev-green);
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    /* ── Cards ── */
+    .glass-card {
+      background: rgba(19, 34, 53, 0.85);
+      border: 1px solid var(--ev-border);
+      border-radius: 20px;
+      backdrop-filter: blur(8px);
+    }
+    .section-heading {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #c5d9f0;
+      letter-spacing: .3px;
+    }
+    .section-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+    }
+
+    /* ── Form controls ── */
+    .form-label {
+      font-size: .82rem;
+      font-weight: 600;
+      color: #93b4d4;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      margin-bottom: .35rem;
+    }
+    .form-control, .form-select {
+      background: rgba(255,255,255,.05) !important;
+      border: 1px solid var(--ev-border) !important;
+      color: #e0eaff !important;
+      border-radius: 10px;
+      padding: .65rem 1rem;
+      font-size: .95rem;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--ev-green) !important;
+      box-shadow: 0 0 0 3px rgba(29,185,84,.15) !important;
+    }
+    .form-select option {
+      background: #0d1b2a;
+      color: #e0eaff;
+    }
+
+    /* ── EV-type toggle ── */
+    .ev-toggle .btn-check:checked + .btn-outline-ev {
+      background: var(--ev-green);
+      border-color: var(--ev-green);
+      color: #fff;
+    }
+    .btn-outline-ev {
+      border: 1px solid var(--ev-border);
+      color: #93b4d4;
+      background: rgba(255,255,255,.04);
+      border-radius: 10px !important;
+      padding: .6rem 1.4rem;
+      font-weight: 600;
+      font-size: .9rem;
+      transition: all .2s;
+    }
+    .btn-outline-ev:hover {
+      border-color: var(--ev-green);
+      color: var(--ev-green);
+    }
+
+    /* ── Area toggle ── */
+    .area-toggle .btn-check:checked + .btn-outline-area {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #fff;
+    }
+    .btn-outline-area {
+      border: 1px solid var(--ev-border);
+      color: #93b4d4;
+      background: rgba(255,255,255,.04);
+      border-radius: 10px !important;
+      padding: .6rem 1.4rem;
+      font-weight: 600;
+      font-size: .9rem;
+      transition: all .2s;
+    }
+    .btn-outline-area:hover {
+      border-color: #2563eb;
+      color: #60a5fa;
+    }
+
+    /* ── Predict button ── */
+    .btn-predict {
+      background: linear-gradient(135deg, #1db954, #17a847);
+      border: none;
+      border-radius: 12px;
+      padding: .85rem 2rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: .4px;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 4px 20px rgba(29,185,84,.3);
+    }
+    .btn-predict:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(29,185,84,.45);
+      color: #fff;
+    }
+    .btn-predict:disabled {
+      opacity: .65;
+      cursor: not-allowed;
+    }
+
+    /* ── Result box ── */
+    #result-box {
+      display: none;
+      animation: fadeSlideIn .4s ease;
+    }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .result-value {
+      font-size: 4rem;
+      font-weight: 900;
+      color: var(--ev-green);
+      line-height: 1;
+    }
+    .result-unit {
+      font-size: 1.4rem;
+      color: #93b4d4;
+      font-weight: 400;
+    }
+    .range-bar-wrap {
+      background: rgba(255,255,255,.07);
+      border-radius: 50px;
+      height: 10px;
+      overflow: hidden;
+    }
+    .range-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #1db954, #17e87a);
+      border-radius: 50px;
+      transition: width .8s cubic-bezier(.4,0,.2,1);
+    }
+    .range-label {
+      font-size: .78rem;
+      color: #5a7a9a;
+    }
+
+    /* ── Sample cards ── */
+    .sample-card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--ev-border);
+      border-radius: 14px;
+      padding: .85rem 1rem;
+      cursor: pointer;
+      transition: border-color .2s, background .2s, transform .15s;
+    }
+    .sample-card:hover {
+      border-color: var(--ev-green);
+      background: rgba(29,185,84,.08);
+      transform: translateY(-2px);
+    }
+    .sample-card.active {
+      border-color: var(--ev-green);
+      background: rgba(29,185,84,.12);
+    }
+    .sample-title {
+      font-size: .88rem;
+      font-weight: 600;
+      color: #d0e8ff;
+    }
+    .sample-meta {
+      font-size: .75rem;
+      color: #5a7a9a;
+      margin-top: .2rem;
+    }
+    .sample-badge {
+      font-size: .68rem;
+      padding: .18rem .55rem;
+      border-radius: 50px;
+      font-weight: 600;
+    }
+    .badge-bev  { background: rgba(29,185,84,.2);  color: #1db954; border: 1px solid rgba(29,185,84,.35); }
+    .badge-phev { background: rgba(37,99,235,.2);  color: #60a5fa; border: 1px solid rgba(37,99,235,.35); }
+    .badge-urban{ background: rgba(168,85,247,.2); color: #c084fc; border: 1px solid rgba(168,85,247,.35);}
+    .badge-rural{ background: rgba(245,158,11,.2); color: #fbbf24; border: 1px solid rgba(245,158,11,.35);}
+
+    /* ── Error ── */
+    .alert-error {
+      background: rgba(239,68,68,.12);
+      border: 1px solid rgba(239,68,68,.3);
+      color: #fca5a5;
+      border-radius: 12px;
+      font-size: .9rem;
+    }
+
+    /* ── Footer ── */
+    footer {
+      background: rgba(13,27,42,.6);
+      border-top: 1px solid var(--ev-border);
+      color: #3d5a7a;
+      font-size: .82rem;
+    }
+
+    /* ── Spinner ── */
+    .spinner-border-sm { width: 1rem; height: 1rem; }
+
+    /* ── Main Tabs ── */
+    .main-tabs {
+      background: rgba(13,27,42,0.9);
+      border-bottom: 1px solid var(--ev-border);
+    }
+    .main-tabs .nav-link {
+      color: #5a7a9a;
+      border: none;
+      border-bottom: 3px solid transparent;
+      border-radius: 0;
+      padding: .85rem 1.5rem;
+      font-weight: 600;
+      font-size: .92rem;
+      transition: color .2s, border-color .2s;
+    }
+    .main-tabs .nav-link:hover { color: #c5d9f0; }
+    .main-tabs .nav-link.active {
+      color: var(--ev-green);
+      border-bottom-color: var(--ev-green);
+      background: transparent;
+    }
+
+    /* ── Analysis tab ── */
+    .stat-card {
+      background: rgba(19,34,53,0.85);
+      border: 1px solid var(--ev-border);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+    }
+    .stat-card .stat-number {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .stat-card .stat-label {
+      font-size: .78rem;
+      color: #5a7a9a;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      margin-top: .25rem;
+    }
+    .chart-wrapper {
+      position: relative;
+      height: 420px;
+    }
+    .btn-generate {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border: none;
+      border-radius: 12px;
+      padding: .85rem 2rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: .4px;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 4px 20px rgba(37,99,235,.3);
+    }
+    .btn-generate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(37,99,235,.45);
+      color: #fff;
+    }
+    .urban-badge  { background:rgba(168,85,247,.15); color:#c084fc; border:1px solid rgba(168,85,247,.3); font-size:.7rem; padding:.2rem .6rem; border-radius:50px; }
+    .rural-badge  { background:rgba(245,158,11,.15); color:#fbbf24; border:1px solid rgba(245,158,11,.3); font-size:.7rem; padding:.2rem .6rem; border-radius:50px; }
+    #analysis-loading { display:none; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-custom sticky-top py-2">
+  <div class="container">
+    <a class="navbar-brand-custom d-flex align-items-center gap-2" href="#">
+      <i class="bi bi-lightning-charge-fill text-success fs-5"></i>
+      EV Range Predictor
+    </a>
+    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-3 py-2" style="font-size:.75rem">
+      <i class="bi bi-cpu me-1"></i>XGBoost Model &mdash; R² 0.9901
+    </span>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <div class="hero-badge"><i class="bi bi-mortarboard me-1"></i>Thesis Project &mdash; Washington State EV Data</div>
+        <h1>Battery Range &amp; Adoption Patterns<br><span style="color:var(--ev-green)">of Electric Vehicles</span></h1>
+        <p class="mt-2 mb-3">Predict the electric range of any EV using a machine-learning model trained on <strong style="color:#fff">280,833</strong> Washington State registrations.</p>
+        <div class="d-flex flex-wrap gap-2">
+          <div class="stat-pill"><span>280K+</span> &nbsp;Records</div>
+          <div class="stat-pill"><span>99%</span> &nbsp;R² Score</div>
+          <div class="stat-pill"><span>4</span> &nbsp;Models Compared</div>
+          <div class="stat-pill"><span>22</span> &nbsp;Makes Supported</div>
+        </div>
+      </div>
+      <div class="col-lg-5 text-center d-none d-lg-block">
+        <i class="bi bi-ev-station-fill" style="font-size:9rem;color:rgba(29,185,84,.25);filter:drop-shadow(0 0 40px rgba(29,185,84,.3))"></i>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Tab Navigation -->
+<div class="main-tabs sticky-top" style="top:56px;z-index:999">
+  <div class="container">
+    <ul class="nav" id="mainTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <a class="nav-link active" id="predictor-tab" data-bs-toggle="tab" href="#predictor-panel" role="tab" aria-selected="true">
+          <i class="bi bi-sliders me-2"></i>Battery Range Predictor
+        </a>
+      </li>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" id="analysis-tab" data-bs-toggle="tab" href="#analysis-panel" role="tab" aria-selected="false">
+          <i class="bi bi-graph-up-arrow me-2"></i>EV Adoption Analysis
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="tab-content">
+<!-- ═══════════════ PREDICTOR TAB ═══════════════ -->
+<div class="tab-pane fade show active" id="predictor-panel" role="tabpanel">
+
+<!-- Main Content -->
+<div class="container py-5">
+  <div class="row g-4">
+
+    <!-- Left: Quick Samples -->
+    <div class="col-lg-4">
+      <div class="glass-card p-4 h-100">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="section-icon bg-warning bg-opacity-10 text-warning">
+            <i class="bi bi-lightning-fill"></i>
+          </div>
+          <span class="section-heading">Quick Sample Tests</span>
+        </div>
+        <p style="font-size:.82rem;color:#5a7a9a" class="mb-3">Click any sample to auto-fill the form and predict instantly.</p>
+        <div class="d-flex flex-column gap-2" id="sample-list">
+          {% for s in samples %}
+          <div class="sample-card"
+               data-model-year="{{ s.model_year }}"
+               data-make="{{ s.make }}"
+               data-ev-type="{{ s.ev_type }}"
+               data-area-type="{{ s.area_type }}"
+               data-cafv="{{ s.cafv }}"
+               onclick="loadSample(this)">
+            <div class="d-flex justify-content-between align-items-start">
+              <div class="sample-title">{{ s.label }}</div>
+            </div>
+            <div class="d-flex gap-1 flex-wrap mt-1">
+              <span class="sample-badge {% if s.ev_type == 'BEV' %}badge-bev{% else %}badge-phev{% endif %}">
+                {{ s.ev_type }}
+              </span>
+              <span class="sample-badge {% if s.area_type == 'Urban' %}badge-urban{% else %}badge-rural{% endif %}">
+                {{ s.area_type }}
+              </span>
+              <span class="sample-badge" style="background:rgba(255,255,255,.07);color:#7a9ab8;border:1px solid rgba(255,255,255,.1)">
+                {{ s.model_year }}
+              </span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Prediction Form -->
+    <div class="col-lg-5">
+      <div class="glass-card p-4">
+        <div class="d-flex align-items-center gap-2 mb-4">
+          <div class="section-icon bg-success bg-opacity-10 text-success">
+            <i class="bi bi-sliders"></i>
+          </div>
+          <span class="section-heading">Vehicle Parameters</span>
+        </div>
+
+        <form id="predict-form" novalidate>
+
+          <!-- Model Year -->
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-calendar3 me-1"></i>Model Year</label>
+            <input type="number" id="model_year" class="form-control"
+                   placeholder="e.g. 2023" min="1990" max="2030" required />
+          </div>
+
+          <!-- Make -->
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-car-front me-1"></i>Manufacturer (Make)</label>
+            <select id="make" class="form-select" required>
+              <option value="" disabled selected>Select a make…</option>
+              {% for make in makes %}
+                {% if make != 'OTHER' %}
+                <option value="{{ make }}">{{ make }}</option>
+                {% endif %}
+              {% endfor %}
+              <option value="OTHER">OTHER</option>
+            </select>
+          </div>
+
+          <!-- EV Type -->
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-plug me-1"></i>EV Type</label>
+            <div class="d-flex gap-2 ev-toggle">
+              <input type="radio" class="btn-check" name="ev_type" id="ev-bev" value="BEV" autocomplete="off" />
+              <label class="btn btn-outline-ev flex-fill text-center" for="ev-bev">
+                <i class="bi bi-battery-charging me-1"></i>BEV
+                <div style="font-size:.7rem;font-weight:400;color:inherit;opacity:.7">Battery Electric</div>
+              </label>
+              <input type="radio" class="btn-check" name="ev_type" id="ev-phev" value="PHEV" autocomplete="off" />
+              <label class="btn btn-outline-ev flex-fill text-center" for="ev-phev">
+                <i class="bi bi-fuel-pump me-1"></i>PHEV
+                <div style="font-size:.7rem;font-weight:400;color:inherit;opacity:.7">Plug-in Hybrid</div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Area Type -->
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-geo-alt me-1"></i>Registration Area</label>
+            <div class="d-flex gap-2 area-toggle">
+              <input type="radio" class="btn-check" name="area_type" id="area-urban" value="Urban" autocomplete="off" />
+              <label class="btn btn-outline-area flex-fill text-center" for="area-urban">
+                <i class="bi bi-buildings me-1"></i>Urban
+              </label>
+              <input type="radio" class="btn-check" name="area_type" id="area-rural" value="Rural" autocomplete="off" />
+              <label class="btn btn-outline-area flex-fill text-center" for="area-rural">
+                <i class="bi bi-tree me-1"></i>Rural
+              </label>
+            </div>
+          </div>
+
+          <!-- CAFV Eligibility -->
+          <div class="mb-4">
+            <label class="form-label"><i class="bi bi-patch-check me-1"></i>CAFV Eligibility</label>
+            <select id="cafv" class="form-select" required>
+              <option value="" disabled selected>Select eligibility…</option>
+              {% for cafv in cafv_options %}
+              <option value="{{ cafv }}">
+                {% if cafv == 'Clean Alternative Fuel Vehicle Eligible' %}
+                  CAFV Eligible
+                {% elif cafv == 'Eligibility unknown as battery range has not been researched' %}
+                  Unknown (Range Not Researched)
+                {% else %}
+                  Not Eligible (Low Battery Range)
+                {% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Error -->
+          <div id="error-box" class="alert alert-error d-none mb-3">
+            <i class="bi bi-exclamation-triangle me-2"></i><span id="error-msg"></span>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" class="btn btn-predict w-100" id="predict-btn">
+            <span id="btn-text"><i class="bi bi-rocket-takeoff me-2"></i>Predict Electric Range</span>
+            <span id="btn-spinner" class="d-none">
+              <span class="spinner-border spinner-border-sm me-2" role="status"></span>Predicting…
+            </span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right: Result -->
+    <div class="col-lg-3">
+      <div class="glass-card p-4 h-100 d-flex flex-column justify-content-center">
+        <div class="d-flex align-items-center gap-2 mb-4">
+          <div class="section-icon bg-info bg-opacity-10 text-info">
+            <i class="bi bi-graph-up-arrow"></i>
+          </div>
+          <span class="section-heading">Prediction</span>
+        </div>
+
+        <!-- Idle state -->
+        <div id="idle-state" class="text-center py-4">
+          <i class="bi bi-arrow-left-circle" style="font-size:2.5rem;color:#1e3a5f"></i>
+          <p class="mt-3" style="color:#3d5a7a;font-size:.88rem">Fill the form or pick a sample to see the predicted electric range.</p>
+        </div>
+
+        <!-- Result -->
+        <div id="result-box" class="text-center">
+          <div style="font-size:.78rem;color:#5a7a9a;text-transform:uppercase;letter-spacing:1px;margin-bottom:.5rem">
+            Predicted Range
+          </div>
+          <div class="result-value" id="range-value">—</div>
+          <div class="result-unit mt-1">miles</div>
+
+          <div class="mt-4">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="range-label">0 mi</span>
+              <span class="range-label">337 mi (max)</span>
+            </div>
+            <div class="range-bar-wrap">
+              <div class="range-bar" id="range-bar" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div class="mt-4 p-3 rounded-3" style="background:rgba(255,255,255,.05);border:1px solid var(--ev-border)">
+            <div id="result-summary" style="font-size:.82rem;color:#7a9ab8;text-align:left;line-height:1.7"></div>
+          </div>
+
+          <div class="mt-3">
+            <span id="range-tier" class="badge fs-6 px-3 py-2 rounded-pill"></span>
+          </div>
+        </div>
+
+        <!-- Model info footer inside card -->
+        <div class="mt-auto pt-4">
+          <div class="p-3 rounded-3" style="background:rgba(255,255,255,.03);border:1px solid var(--ev-border);font-size:.75rem;color:#3d5a7a">
+            <div><i class="bi bi-cpu me-1 text-success"></i><strong style="color:#5a7a9a">Model:</strong> XGBoost Regressor</div>
+            <div class="mt-1"><i class="bi bi-database me-1 text-success"></i><strong style="color:#5a7a9a">Trained on:</strong> 280,833 WA records</div>
+            <div class="mt-1"><i class="bi bi-star me-1 text-warning"></i><strong style="color:#5a7a9a">R² Score:</strong> 0.9901</div>
+            <div class="mt-1"><i class="bi bi-bullseye me-1 text-info"></i><strong style="color:#5a7a9a">MAE:</strong> 3.85 miles</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /row -->
+</div><!-- /container predictor -->
+
+</div><!-- /tab-pane predictor -->
+
+<!-- ═══════════════ ANALYSIS TAB ═══════════════ -->
+<div class="tab-pane fade" id="analysis-panel" role="tabpanel">
+<div class="container py-5">
+
+  <!-- Section header -->
+  <div class="mb-4">
+    <div class="hero-badge mb-2"><i class="bi bi-bar-chart-fill me-1"></i>Research Analysis</div>
+    <h2 style="font-size:1.9rem;font-weight:800;color:#fff">EV Adoption Rate Analysis</h2>
+    <p style="color:#93b4d4;font-size:1rem;max-width:650px">
+      Compare electric vehicle registrations against non-electric vehicles by year and area type across Washington State,
+      demonstrating how EV adoption has grown over time.
+    </p>
+  </div>
+
+  <!-- Filter row -->
+  <div class="glass-card p-4 mb-4">
+    <div class="row g-3 align-items-end">
+      <div class="col-sm-6 col-md-3">
+        <label class="form-label"><i class="bi bi-calendar3 me-1"></i>Year From</label>
+        <select id="year-from" class="form-select">
+          <option value="2017">2017</option>
+          <option value="2018">2018</option>
+          <option value="2019">2019</option>
+          <option value="2020" selected>2020</option>
+          <option value="2021">2021</option>
+          <option value="2022">2022</option>
+          <option value="2023">2023</option>
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <label class="form-label"><i class="bi bi-calendar3-fill me-1"></i>Year To</label>
+        <select id="year-to" class="form-select">
+          <option value="2017">2017</option>
+          <option value="2018">2018</option>
+          <option value="2019">2019</option>
+          <option value="2020">2020</option>
+          <option value="2021">2021</option>
+          <option value="2022">2022</option>
+          <option value="2023">2023</option>
+          <option value="2024">2024</option>
+          <option value="2025" selected>2025</option>
+        </select>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <label class="form-label"><i class="bi bi-geo-alt me-1"></i>Area Type</label>
+        <select id="area-filter" class="form-select">
+          <option value="All">All Areas</option>
+          <option value="Urban">Urban Counties</option>
+          <option value="Rural">Rural Counties</option>
+        </select>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <button class="btn btn-generate w-100" onclick="generateAnalysis()">
+          <span id="gen-btn-text"><i class="bi bi-bar-chart-fill me-2"></i>Generate Analysis</span>
+          <span id="gen-btn-spinner" class="d-none">
+            <span class="spinner-border spinner-border-sm me-2"></span>Loading…
+          </span>
+        </button>
+      </div>
+    </div>
+    <div class="mt-3" style="font-size:.78rem;color:#3d5a7a">
+      <i class="bi bi-info-circle me-1"></i>
+      <strong style="color:#5a7a9a">Urban counties:</strong> King, Pierce, Snohomish, Spokane, Clark, Thurston, Whatcom, Kitsap, Benton, Franklin, Yakima, Cowlitz, Skagit, Walla Walla &nbsp;|&nbsp;
+      <strong style="color:#5a7a9a">All other counties:</strong> Rural
+    </div>
+  </div>
+
+  <!-- Error box -->
+  <div id="analysis-error" class="d-none mb-3" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:12px;padding:.75rem 1rem;font-size:.9rem;">
+    <i class="bi bi-exclamation-triangle me-2"></i><span id="analysis-error-msg"></span>
+  </div>
+
+  <!-- Chart + stats (hidden until first generate) -->
+  <div id="analysis-results" class="d-none">
+
+    <!-- Stats row -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-number text-success" id="stat-total-ev">—</div>
+          <div class="stat-label">Total EV Registrations</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-number" style="color:#60a5fa" id="stat-total-non-ev">—</div>
+          <div class="stat-label">Non-EV Registrations</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-number" style="color:#fbbf24" id="stat-avg-adoption">—</div>
+          <div class="stat-label">Avg EV Adoption Rate</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-number" style="color:#f472b6" id="stat-growth">—</div>
+          <div class="stat-label">EV Growth (First→Last Year)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart card -->
+    <div class="glass-card p-4 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h5 style="color:#fff;font-weight:700;margin:0" id="chart-title">EV vs Non-EV Registrations</h5>
+          <div style="font-size:.78rem;color:#5a7a9a" id="chart-subtitle"></div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <span style="font-size:.78rem;padding:.25rem .75rem;border-radius:50px;background:rgba(29,185,84,.15);color:#1db954;border:1px solid rgba(29,185,84,.3)">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1db954;margin-right:4px"></span>EV Count
+          </span>
+          <span style="font-size:.78rem;padding:.25rem .75rem;border-radius:50px;background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.3)">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#60a5fa;margin-right:4px"></span>Non-EV Count
+          </span>
+          <span style="font-size:.78rem;padding:.25rem .75rem;border-radius:50px;background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.3)">
+            <span style="display:inline-block;width:10px;height:2px;display:inline-block;border-top:3px dashed #fbbf24;margin-right:4px;vertical-align:middle"></span>Adoption Rate %
+          </span>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="adoptionChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Insight card -->
+    <div class="glass-card p-4">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="section-icon bg-warning bg-opacity-10 text-warning"><i class="bi bi-lightbulb-fill"></i></div>
+        <span class="section-heading">Key Insights</span>
+      </div>
+      <div id="analysis-insights" style="color:#93b4d4;font-size:.92rem;line-height:1.9"></div>
+    </div>
+
+  </div><!-- /analysis-results -->
+
+</div><!-- /container analysis -->
+</div><!-- /tab-pane analysis -->
+
+</div><!-- /tab-content -->
+
+<!-- Footer -->
+<footer class="py-3 mt-4">
+  <div class="container d-flex flex-wrap justify-content-between align-items-center">
+    <span><i class="bi bi-lightning-charge-fill text-success me-1"></i>Battery Range &amp; Adoption Patterns of Electric Vehicles &mdash; Washington State</span>
+    <span>Dataset: <a href="https://data.wa.gov/Transportation/Electric-Vehicle-Population-Data/f6w7-q2d2" target="_blank" style="color:#2563eb;text-decoration:none">data.wa.gov</a></span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+  const MAX_RANGE = 337;
+
+  const form       = document.getElementById('predict-form');
+  const predictBtn = document.getElementById('predict-btn');
+  const btnText    = document.getElementById('btn-text');
+  const btnSpinner = document.getElementById('btn-spinner');
+  const errorBox   = document.getElementById('error-box');
+  const errorMsg   = document.getElementById('error-msg');
+  const idleState  = document.getElementById('idle-state');
+  const resultBox  = document.getElementById('result-box');
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorBox.classList.remove('d-none');
+  }
+
+  function clearError() {
+    errorBox.classList.add('d-none');
+    errorMsg.textContent = '';
+  }
+
+  function setLoading(loading) {
+    predictBtn.disabled = loading;
+    btnText.classList.toggle('d-none', loading);
+    btnSpinner.classList.toggle('d-none', !loading);
+  }
+
+  function getEvType() {
+    const bev  = document.getElementById('ev-bev');
+    const phev = document.getElementById('ev-phev');
+    if (bev.checked)  return 'BEV';
+    if (phev.checked) return 'PHEV';
+    return null;
+  }
+
+  function getAreaType() {
+    const urban = document.getElementById('area-urban');
+    const rural = document.getElementById('area-rural');
+    if (urban.checked) return 'Urban';
+    if (rural.checked) return 'Rural';
+    return null;
+  }
+
+  function getTierBadge(miles) {
+    if (miles >= 250) return { label: '🏆 Long Range',   cls: 'bg-success' };
+    if (miles >= 150) return { label: '✅ Good Range',   cls: 'bg-primary' };
+    if (miles >= 50)  return { label: '🔋 Moderate',     cls: 'bg-warning text-dark' };
+    return                   { label: '⚠️ Short Range',  cls: 'bg-danger'  };
+  }
+
+  function displayResult(miles, params) {
+    idleState.style.display = 'none';
+    resultBox.style.display = 'block';
+
+    document.getElementById('range-value').textContent = miles.toFixed(1);
+
+    const pct = Math.min((miles / MAX_RANGE) * 100, 100);
+    document.getElementById('range-bar').style.width = pct + '%';
+
+    const tier = getTierBadge(miles);
+    const tierEl = document.getElementById('range-tier');
+    tierEl.textContent = tier.label;
+    tierEl.className = `badge fs-6 px-3 py-2 rounded-pill ${tier.cls}`;
+
+    const cafvShort = params.cafv === 'Clean Alternative Fuel Vehicle Eligible'
+      ? 'CAFV Eligible'
+      : params.cafv.includes('unknown')
+        ? 'Unknown Eligibility'
+        : 'Not Eligible';
+
+    document.getElementById('result-summary').innerHTML = `
+      <div><i class="bi bi-calendar3 me-1"></i><strong>Year:</strong> ${params.model_year}</div>
+      <div><i class="bi bi-car-front me-1"></i><strong>Make:</strong> ${params.make}</div>
+      <div><i class="bi bi-plug me-1"></i><strong>Type:</strong> ${params.ev_type}</div>
+      <div><i class="bi bi-geo-alt me-1"></i><strong>Area:</strong> ${params.area_type}</div>
+      <div><i class="bi bi-patch-check me-1"></i><strong>CAFV:</strong> ${cafvShort}</div>
+    `;
+  }
+
+  async function submitPrediction(payload) {
+    clearError();
+    setLoading(true);
+    try {
+      const res = await fetch('/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Prediction failed.');
+      displayResult(data.predicted_range, payload);
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearError();
+
+    const model_year = parseInt(document.getElementById('model_year').value);
+    const make       = document.getElementById('make').value;
+    const ev_type    = getEvType();
+    const area_type  = getAreaType();
+    const cafv       = document.getElementById('cafv').value;
+
+    if (!model_year || isNaN(model_year)) return showError('Please enter a valid model year.');
+    if (!make)       return showError('Please select a manufacturer.');
+    if (!ev_type)    return showError('Please select BEV or PHEV.');
+    if (!area_type)  return showError('Please select Urban or Rural.');
+    if (!cafv)       return showError('Please select CAFV eligibility.');
+
+    await submitPrediction({ model_year, make, ev_type, area_type, cafv });
+  });
+
+  function loadSample(card) {
+    document.querySelectorAll('.sample-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+
+    const year     = card.dataset.modelYear;
+    const make     = card.dataset.make;
+    const evType   = card.dataset.evType;
+    const areaType = card.dataset.areaType;
+    const cafv     = card.dataset.cafv;
+
+    document.getElementById('model_year').value = year;
+    document.getElementById('make').value        = make;
+    document.getElementById('cafv').value        = cafv;
+
+    document.getElementById(evType === 'BEV' ? 'ev-bev' : 'ev-phev').checked = true;
+    document.getElementById(areaType === 'Urban' ? 'area-urban' : 'area-rural').checked = true;
+
+    submitPrediction({
+      model_year: parseInt(year),
+      make,
+      ev_type: evType,
+      area_type: areaType,
+      cafv
+    });
+  }
+
+  // ─────────────────────────────────────────────
+  // ANALYSIS TAB
+  // ─────────────────────────────────────────────
+  let adoptionChartInst = null;
+
+  function fmtNum(n) {
+    return n >= 1_000_000
+      ? (n / 1_000_000).toFixed(2) + 'M'
+      : n >= 1_000
+        ? (n / 1_000).toFixed(1) + 'K'
+        : n.toString();
+  }
+
+  function setGenLoading(on) {
+    document.getElementById('gen-btn-text').classList.toggle('d-none', on);
+    document.getElementById('gen-btn-spinner').classList.toggle('d-none', !on);
+  }
+
+  function showAnalysisError(msg) {
+    const box = document.getElementById('analysis-error');
+    document.getElementById('analysis-error-msg').textContent = msg;
+    box.classList.remove('d-none');
+  }
+
+  function clearAnalysisError() {
+    document.getElementById('analysis-error').classList.add('d-none');
+  }
+
+  async function generateAnalysis() {
+    clearAnalysisError();
+    const yearFrom  = parseInt(document.getElementById('year-from').value);
+    const yearTo    = parseInt(document.getElementById('year-to').value);
+    const areaType  = document.getElementById('area-filter').value;
+
+    if (yearFrom > yearTo) {
+      return showAnalysisError('"Year From" must be less than or equal to "Year To".');
+    }
+
+    setGenLoading(true);
+    try {
+      const res  = await fetch(`/analysis_data?year_from=${yearFrom}&year_to=${yearTo}&area_type=${encodeURIComponent(areaType)}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load data.');
+
+      renderAnalysis(data, yearFrom, yearTo, areaType);
+    } catch (err) {
+      showAnalysisError(err.message);
+    } finally {
+      setGenLoading(false);
+    }
+  }
+
+  function renderAnalysis(data, yearFrom, yearTo, areaLabel) {
+    const { years, ev_counts, non_ev_counts, total_counts, adoption_rates } = data;
+
+    // ── Stats ──
+    const totalEV    = ev_counts.reduce((a, b) => a + b, 0);
+    const totalNonEV = non_ev_counts.reduce((a, b) => a + b, 0);
+    const avgRate    = adoption_rates.length
+      ? (adoption_rates.reduce((a, b) => a + b, 0) / adoption_rates.length).toFixed(2)
+      : 0;
+    let growth = '—';
+    if (ev_counts.length >= 2) {
+      const first = ev_counts[0];
+      const last  = ev_counts[ev_counts.length - 1];
+      if (first > 0) growth = ((last - first) / first * 100).toFixed(1) + '%';
+      else if (last > 0) growth = '+∞';
+    }
+
+    document.getElementById('stat-total-ev').textContent    = fmtNum(totalEV);
+    document.getElementById('stat-total-non-ev').textContent = fmtNum(totalNonEV);
+    document.getElementById('stat-avg-adoption').textContent = avgRate + '%';
+    document.getElementById('stat-growth').textContent       = growth;
+
+    // ── Chart subtitle ──
+    const areaStr = areaLabel === 'All' ? 'All Areas' : areaLabel + ' Counties';
+    document.getElementById('chart-subtitle').textContent =
+      `${yearFrom} – ${yearTo} · ${areaStr} · Washington State`;
+
+    // ── Chart ──
+    if (adoptionChartInst) adoptionChartInst.destroy();
+
+    const ctx = document.getElementById('adoptionChart').getContext('2d');
+    adoptionChartInst = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: years.map(String),
+        datasets: [
+          {
+            label: 'Electric Vehicles',
+            data: ev_counts,
+            backgroundColor: 'rgba(29,185,84,0.75)',
+            borderColor: '#1db954',
+            borderWidth: 1.5,
+            borderRadius: 6,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Non-Electric Vehicles',
+            data: non_ev_counts,
+            backgroundColor: 'rgba(96,165,250,0.5)',
+            borderColor: '#60a5fa',
+            borderWidth: 1.5,
+            borderRadius: 6,
+            yAxisID: 'y'
+          },
+          {
+            label: 'EV Adoption Rate (%)',
+            data: adoption_rates,
+            type: 'line',
+            borderColor: '#fbbf24',
+            backgroundColor: 'rgba(251,191,36,0.08)',
+            borderWidth: 2.5,
+            borderDash: [6, 3],
+            pointBackgroundColor: '#fbbf24',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            tension: 0.4,
+            fill: false,
+            yAxisID: 'y2'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(13,27,42,0.95)',
+            borderColor: '#1e3a5f',
+            borderWidth: 1,
+            titleColor: '#c5d9f0',
+            bodyColor: '#93b4d4',
+            padding: 12,
+            callbacks: {
+              label: ctx => {
+                if (ctx.datasetIndex === 2)
+                  return ` Adoption Rate: ${ctx.parsed.y}%`;
+                return ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#5a7a9a' },
+            grid:  { color: 'rgba(30,58,95,0.4)' }
+          },
+          y: {
+            position: 'left',
+            ticks: {
+              color: '#5a7a9a',
+              callback: v => v >= 1_000_000 ? (v/1_000_000).toFixed(1)+'M' : v >= 1_000 ? (v/1_000).toFixed(0)+'K' : v
+            },
+            grid: { color: 'rgba(30,58,95,0.4)' },
+            title: { display: true, text: 'Vehicle Registrations', color: '#3d5a7a', font: { size: 12 } }
+          },
+          y2: {
+            position: 'right',
+            ticks: {
+              color: '#fbbf24',
+              callback: v => v + '%'
+            },
+            grid: { drawOnChartArea: false },
+            title: { display: true, text: 'EV Adoption Rate (%)', color: '#fbbf24', font: { size: 12 } }
+          }
+        }
+      }
+    });
+
+    // ── Insights ──
+    const peakRateYear  = years[adoption_rates.indexOf(Math.max(...adoption_rates))];
+    const peakRateVal   = Math.max(...adoption_rates);
+    const startRate     = adoption_rates[0];
+    const endRate       = adoption_rates[adoption_rates.length - 1];
+    const rateChange    = (endRate - startRate).toFixed(2);
+    const evGrowthAbs   = ev_counts[ev_counts.length - 1] - ev_counts[0];
+
+    document.getElementById('analysis-insights').innerHTML = `
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div style="background:rgba(29,185,84,.07);border:1px solid rgba(29,185,84,.2);border-radius:12px;padding:1rem">
+            <div style="color:#1db954;font-weight:700;margin-bottom:.4rem"><i class="bi bi-arrow-up-right-circle-fill me-2"></i>EV Adoption Growth</div>
+            EV adoption rate moved from <strong style="color:#fff">${startRate}%</strong> in ${yearFrom}
+            to <strong style="color:#1db954">${endRate}%</strong> in ${yearTo}
+            — a change of <strong style="color:#1db954">${rateChange > 0 ? '+' : ''}${rateChange} percentage points</strong>.
+            The highest adoption rate was recorded in <strong style="color:#fff">${peakRateYear}</strong> at <strong style="color:#1db954">${peakRateVal}%</strong>.
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div style="background:rgba(96,165,250,.07);border:1px solid rgba(96,165,250,.2);border-radius:12px;padding:1rem">
+            <div style="color:#60a5fa;font-weight:700;margin-bottom:.4rem"><i class="bi bi-bar-chart-fill me-2"></i>Registration Volume</div>
+            Over the selected period, Washington State recorded
+            <strong style="color:#fff">${fmtNum(totalEV)}</strong> EV registrations
+            versus <strong style="color:#fff">${fmtNum(totalNonEV)}</strong> non-EV registrations.
+            EV counts ${evGrowthAbs >= 0 ? 'grew' : 'declined'} by <strong style="color:#60a5fa">${fmtNum(Math.abs(evGrowthAbs))}</strong>
+            units from ${yearFrom} to ${yearTo}.
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('analysis-results').classList.remove('d-none');
+  }
+
+  // Auto-generate analysis when the tab is first opened
+  document.getElementById('analysis-tab').addEventListener('shown.bs.tab', () => {
+    if (document.getElementById('analysis-results').classList.contains('d-none')) {
+      generateAnalysis();
+    }
+  });
+</script>
+</body>
+</html>
